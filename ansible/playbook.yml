@@ -1,0 +1,8 @@
+---
+- name: File Server
+  hosts: rocky
+  become: true
+
+  roles:
+    - { role: samba, when: ansible_system == "Linux" }
+

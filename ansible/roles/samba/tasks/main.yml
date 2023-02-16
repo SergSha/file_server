@@ -1,0 +1,6 @@
+---
+# tasks file for samba
+
+- name: ping to rocky
+  ping:
+
