@@ -6,6 +6,14 @@
     name:
       - mdadm
     state: present
+
+- name: fill the superblocks with zeros
+  command: mdadm --zero-superblock --force /dev/sd{c,d}
+  ignore_errors: yes
+
+- name: create raid 1
+  command: mdadm --create --force /dev/md0 -l raid1 -n 2 /dev/sd{c,d}
+  ignore_errors: yes
     
 
 - name: Create Data Directory
