@@ -1,6 +1,62 @@
 ---
 # tasks file for samba
 
-- name: ping to rocky
-  ping:
+- name: install mdadm
+  dnf:
+    name:
+      - mdadm
+    state: present
+    
+
+- name: Create Data Directory
+  file: 
+    path: /data
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create a new primary partition
+  parted:
+    device: /dev/md0p1
+    number: 1
+    state: present
+
+- name: Create a xfs filesystem on /dev/md0p1
+  filesystem:
+    fstype: xfs
+    dev: /dev/md0p1
+      
+- name: Fetch the UUID of /dev/md0p1
+  command: blkid -s UUID -o value /dev/md0p1
+  changed_when: false
+  register: blkid_md0p1
+
+#- name: Mount up device /dev/md0p1 by UUID
+#  mount:
+#    path: /var/backup
+#    src: UUID={{ blkid_md0p1.stdout }}
+#    fstype: xfs
+#    opts: defaults,uid={{ uid_user.stdout }},gid={{ gid_user.stdout }}
+#    state: present
+
+- name: Template data.mount to SystemD
+  template: 
+    src: data.mount.j2
+    dest: /etc/systemd/system/data.mount
+    mode: 0644
+
+- name: Start and Enable data.mount
+  service: 
+    name: data.mount
+    state: started
+    enabled: yes
+
+#- name: Copy SystemD Files
+#  copy: src={{ item }} dest=/etc/systemd/system mode=0644
+#  loop:
+#    - "set_var-backup_owner.service"
+#  notify:
+#      - Start and Enable set_var-backup_owner.service
+
 
